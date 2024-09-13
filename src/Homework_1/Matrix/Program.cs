@@ -1,53 +1,14 @@
-﻿using System.Threading;
+﻿using Matrices;
 
-var m = 3;
-var n = 3;
-int[,] matrix_1 = new int[m, n];
-int[,] matrix_2 = new int[m, n];
-int[,] result = new int[m, n];
-var z = 1;
+Generate.GenerateMatrix(3, 3, "matrix_1.txt");
+Generate.GenerateMatrix(3, 3, "matrix_2.txt");
 
-for (int i = 0; i < m; i++)
-{
-    for (int j = 0; j < n; j++)
-    {
-        matrix_1[i, j] = z;
-        matrix_2[i, j] = 2*z;
-        result[i, j] = 0;
-        ++z;
-    }
-}
+var matrix_1 = TransformMatrix.ReadMatrixFromFile("matrix_1.txt");
+var matrix_2 = TransformMatrix.ReadMatrixFromFile("matrix_2.txt");
 
-var threads = new Thread[m];
-var chunkSize = n;
 
-for (var i = 0; i < threads.Length; ++i)
-{
-    var localI = i;
+var result = MatrixMultiplication.ParallelMultiplication(matrix_1, matrix_2);
+//var result = MatrixMultiplication.Multiplication(matrix_1, matrix_2);
 
-    threads[i] = new Thread(() => {
-        for (int j = 0; j < n; ++j)
-        {
-            for (int k = 0; k < n; ++k)
-            {
-                result[localI, j] += matrix_1[localI,k] * matrix_2[k, j];
-            } 
-        }
-    });
-}
+TransformMatrix.WriteMatrixToFile(result);
 
-foreach (var thread in threads)
-    thread.Start();
-
-foreach (var thread in threads)
-    thread.Join();
-
-for (int i = 0; i < m; i++)
-{
-    for (int j = 0; j < n; j++)
-    {
-        Console.Write($"{result[i, j]}  ");
-    }
-
-    Console.WriteLine();
-}
