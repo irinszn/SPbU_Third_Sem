@@ -2,8 +2,17 @@ namespace Matrices;
 
 using System.Threading;
 
+/// <summary>
+/// Class that implements multiplying two matrices.
+/// </summary>
 public class MatrixMultiplication
 {
+    /// <summary>
+    /// Method that multiplies two matrices single-threaded.
+    /// </summary>
+    /// <param name="matrix_1">First matrix.</param>
+    /// <param name="matrix_2">Second matrix.</param>
+    /// <returns>Resulting multiplication matrix.</returns>
     public static Matrix Multiplication(Matrix matrix_1, Matrix matrix_2)
     {
         if (matrix_1.Columns != matrix_2.Lines)
@@ -27,6 +36,12 @@ public class MatrixMultiplication
         return result;
     }
 
+    /// <summary>
+    /// Method that multiplies two matrices multithreaded.
+    /// </summary>
+    /// <param name="matrix_1">First matrix.</param>
+    /// <param name="matrix_2">Second matrix.</param>
+    /// <returns>Resulting multiplication matrix.</returns>
     public static Matrix ParallelMultiplication(Matrix matrix_1, Matrix matrix_2)
     {
         if (matrix_1.Columns != matrix_2.Lines)
