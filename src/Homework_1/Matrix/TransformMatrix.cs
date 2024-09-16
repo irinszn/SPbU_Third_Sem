@@ -27,10 +27,10 @@ public class TransformMatrix
 
             for (var j = 0; j < elementsInLine.Length; ++j)
             {
-                matrix.Values[i,j] = int.Parse(elementsInLine[j]);
+                matrix.Values[i, j] = int.Parse(elementsInLine[j]);
             }
         }
-        
+
         return matrix;
     }
 
@@ -46,7 +46,7 @@ public class TransformMatrix
         {
             for (var j = 0; j < matrix.Columns; ++j)
             {
-                file.Write($"{matrix.Values[i,j]} ");
+                file.Write($"{matrix.Values[i, j]} ");
             }
 
             file.Write(Environment.NewLine);

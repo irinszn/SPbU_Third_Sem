@@ -52,13 +52,14 @@ public class MatrixMultiplication
         var result = new Matrix(matrix_1.Lines, matrix_2.Columns);
 
         var threads = new Thread[Environment.ProcessorCount];
-        var chunkSize = matrix_1.Lines / Environment.ProcessorCount +1;
+        var chunkSize = (matrix_1.Lines / Environment.ProcessorCount) + 1;
 
         for (var i = 0; i < threads.Length; ++i)
         {
             var localI = i;
 
-            threads[i] = new Thread(() => {
+            threads[i] = new Thread(() =>
+            {
                 for (var i = localI * chunkSize; i < (localI + 1) * chunkSize & i < matrix_1.Lines; ++i)
                 {
                     for (var j = 0; j < matrix_2.Columns; ++j)
@@ -73,10 +74,14 @@ public class MatrixMultiplication
         }
 
         foreach (var thread in threads)
+        {
             thread.Start();
+        }
 
         foreach (var thread in threads)
+        {
             thread.Join();
+        }
 
         return result;
     }
