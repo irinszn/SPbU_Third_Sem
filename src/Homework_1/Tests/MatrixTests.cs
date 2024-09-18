@@ -4,18 +4,18 @@ using Matrices;
 
 public class MatrixTests
 {
-    [Test]
-    public void ReadMatrixFromFile_WorksCorrectly()
+    [TestCase("../../../Files/MatrixWithManySpaces.txt")]
+    public void ReadMatrixFromFile_WorksCorrectly(string filePath)
     {
         int[,] expected = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
 
-        var matrix = TransformMatrix.ReadMatrixFromFile("../../../Files/MatrixWithManySpaces.txt");
+        var matrix = TransformMatrix.ReadMatrixFromFile(filePath);
 
         Assert.AreEqual(expected, matrix.Values);
     }
 
-    [Test]
-    public void WriteMatrixToFile_WorksCorrectly()
+    [TestCase("result.txt", "../../../Files/Write_result.txt")]
+    public void WriteMatrixToFile_WorksCorrectly(string result, string expectedResult)
     {
         var matrix = new Matrix(3, 3);
         int[,] values = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
@@ -23,7 +23,7 @@ public class MatrixTests
         matrix.Values = values;
         TransformMatrix.WriteMatrixToFile(matrix);
 
-        Assert.AreEqual(TransformMatrix.ReadMatrixFromFile("result.txt").Values, TransformMatrix.ReadMatrixFromFile("../../../Files/Write_result.txt").Values);
+        Assert.AreEqual(TransformMatrix.ReadMatrixFromFile(result).Values, TransformMatrix.ReadMatrixFromFile(expectedResult).Values);
     }
 
     [TestCase("../../../Files/matrix_1.txt", "../../../Files/matrix_2.txt", "../../../Files/result_12.txt")]
