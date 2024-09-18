@@ -12,6 +12,16 @@ public class TransformMatrix
     /// <returns>Matrix object.</returns>
     public static Matrix ReadMatrixFromFile(string filePath)
     {
+        if (!File.Exists(filePath))
+        {
+            throw new FileNotFoundException("No such file.");
+        }
+
+        if (new FileInfo(filePath).Length == 0)
+        {
+            throw new ArgumentException("File is empty.");
+        }
+
         var matrix = new Matrix();
 
         var matrixLines = File.ReadAllText(filePath).Split("\n", StringSplitOptions.RemoveEmptyEntries);

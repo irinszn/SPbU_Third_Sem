@@ -32,7 +32,7 @@ if (args.Length == 5 & args[0] == "-generate")
 
         TransformMatrix.WriteMatrixToFile(result);
 
-        Console.WriteLine("Successful. Result of multiplication in result.txt file");
+        Console.WriteLine("Successful. Result of multiplication in result.txt file.");
     }
     catch (ArgumentException)
     {
@@ -50,7 +50,7 @@ else if (args.Length == 2)
 
         TransformMatrix.WriteMatrixToFile(result);
 
-        Console.WriteLine("Successful. Result of multiplication in result.txt file");
+        Console.WriteLine("Successful. Result of multiplication in result.txt file.");
     }
     catch (FileNotFoundException)
     {
@@ -58,7 +58,7 @@ else if (args.Length == 2)
     }
     catch (ArgumentException)
     {
-        Console.WriteLine("Matrices are not consistent.");
+        Console.WriteLine("Matrices are not consistent or file is empty.");
     }
 }
 else
