@@ -24,9 +24,20 @@ public class TransformMatrix
 
         var matrix = new Matrix();
 
-        var matrixLines = File.ReadAllText(filePath).Split("\n", StringSplitOptions.RemoveEmptyEntries);
+        var matrixLines = new List<string>();
 
-        matrix.Lines = matrixLines.Length;
+        using var reader = new StreamReader(filePath);
+
+        string? line;
+        while ((line = reader.ReadLine()) != null)
+        {
+            if (line != "")
+            {
+                matrixLines.Add(line.ToString());
+            }
+        }
+
+        matrix.Lines = matrixLines.Count;
         matrix.Columns = matrixLines[0].Split(" ", StringSplitOptions.RemoveEmptyEntries).Length;
 
         matrix.Values = new int[matrix.Lines, matrix.Columns];
