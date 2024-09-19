@@ -26,8 +26,8 @@ if (args.Length == 5 & args[0] == "-generate")
 {
     try
     {
-        Generate.GenerateMatrix(int.Parse(args[1]), int.Parse(args[2]), "matrix_1.txt");
-        Generate.GenerateMatrix(int.Parse(args[3]), int.Parse(args[4]), "matrix_2.txt");
+        Generate.GenerateMatrixInFile(int.Parse(args[1]), int.Parse(args[2]), "matrix_1.txt");
+        Generate.GenerateMatrixInFile(int.Parse(args[3]), int.Parse(args[4]), "matrix_2.txt");
 
         var matrix_1 = TransformMatrix.ReadMatrixFromFile("matrix_1.txt");
         var matrix_2 = TransformMatrix.ReadMatrixFromFile("matrix_2.txt");

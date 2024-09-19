@@ -6,12 +6,12 @@ namespace Matrices;
 public class Generate
 {
     /// <summary>
-    /// Method to generate matrix.
+    /// Method that generates matrix.
     /// </summary>
     /// <param name="lines">Number of lines in matrix.</param>
     /// <param name="columns">Number of columns in matrix.</param>
     /// <param name="filePath">Name of the file into which the matrix should be written.</param>
-    public static void GenerateMatrix(int lines, int columns, string filePath)
+    public static void GenerateMatrixInFile(int lines, int columns, string filePath)
     {
         Random rnd = new Random();
 
@@ -26,5 +26,28 @@ public class Generate
 
             file.Write(Environment.NewLine);
         }
+    }
+
+    /// <summary>
+    /// Method that generates matrix.
+    /// </summary>
+    /// <param name="lines">Number of lines in matrix.</param>
+    /// <param name="columns">Number of columns in matrix.</param>
+    /// <returns>Matrix.</returns>
+    public static Matrix GenerateMatrix(int lines, int columns)
+    {
+        Random rnd = new Random();
+
+        var matrix = new Matrix(lines, columns);
+
+        for (int i = 0; i < lines; i++)
+        {
+            for (int j = 0; j < columns; j++)
+            {
+                matrix.Values[i, j] = rnd.Next(-100, 100);
+            }
+        }
+
+        return matrix;
     }
 }
