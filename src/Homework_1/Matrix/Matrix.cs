@@ -31,11 +31,4 @@ public class Matrix
         Columns = columns;
         Values = new int[Lines, Columns];
     }
-
-    public Matrix()
-    {
-        Lines = default;
-        Columns = default;
-        Values = new int[default, default];
-    }
 }

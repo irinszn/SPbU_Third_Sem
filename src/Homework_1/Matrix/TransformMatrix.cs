@@ -22,8 +22,6 @@ public class TransformMatrix
             throw new ArgumentException("File is empty.");
         }
 
-        var matrix = new Matrix();
-
         var matrixLines = new List<string>();
 
         using var reader = new StreamReader(filePath);
@@ -37,10 +35,7 @@ public class TransformMatrix
             }
         }
 
-        matrix.Lines = matrixLines.Count;
-        matrix.Columns = matrixLines[0].Split(" ", StringSplitOptions.RemoveEmptyEntries).Length;
-
-        matrix.Values = new int[matrix.Lines, matrix.Columns];
+        var matrix = new Matrix(matrixLines.Count, matrixLines[0].Split(" ", StringSplitOptions.RemoveEmptyEntries).Length);
 
         for (var i = 0; i < matrix.Lines; ++i)
         {

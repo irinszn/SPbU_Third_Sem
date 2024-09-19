@@ -13,6 +13,10 @@ if (args.Length == 0 || args[0] == "-help")
 
                         dotnet run [first matrix file path] [second matrix file path]
 
+                        3. To get analysis of multiplication:
+
+                        dotnet run -analyze
+
                         """);
 
     return 0;
@@ -60,6 +64,10 @@ else if (args.Length == 2)
     {
         Console.WriteLine("Matrices are not consistent or file is empty.");
     }
+}
+else if (args[0] == "-analyze")
+{
+    MultiplicationAnalysis.Analyze();
 }
 else
 {
