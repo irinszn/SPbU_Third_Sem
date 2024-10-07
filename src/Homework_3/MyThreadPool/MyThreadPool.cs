@@ -1,0 +1,273 @@
+namespace MyPool;
+
+/// <summary>
+/// Class that implements simple thread pool.
+/// </summary>
+public class MyThreadPool
+{
+    private readonly Queue<Action> _tasks;
+    private readonly Worker[] _threads;
+
+    private readonly CancellationTokenSource _tokenSource;
+    private readonly AutoResetEvent _accessToTask;
+    private readonly AutoResetEvent _wakeUpEvent;
+    private readonly ManualResetEvent _shutdownEvent;
+    
+    private int _doneThreadsCount;
+
+    /// <summary>
+    /// Initialization of MyThreadPool.
+    /// </summary>
+    /// <param name="threadsCount">Input number of threads.</param>
+    public MyThreadPool(int threadsCount)
+    {
+        if (threadsCount <= 0)
+        {
+            throw new ArgumentException("Number of threads must be positive.");
+        }
+
+        _tasks = new Queue<Action>();
+        _threads = new Worker[threadsCount];
+        _tokenSource = new CancellationTokenSource();
+        _accessToTask = new AutoResetEvent(true);
+        _wakeUpEvent = new AutoResetEvent(false);
+        _shutdownEvent = new ManualResetEvent(false);
+        _doneThreadsCount = 0;
+
+        for (var i = 0; i < threadsCount; ++i)
+        {
+            _threads[i] = new Worker(this);
+        }
+    }
+
+    /// <summary>
+    /// Method that puts task into task queue asynchronously.
+    /// </summary>
+    /// <param name="func"></param>
+    /// <typeparam name="TResult"></typeparam>
+    /// <returns></returns>
+    public IMyTask<TResult> Submit<TResult>(Func<TResult> func)
+    {
+        if (_tokenSource.Token.IsCancellationRequested)
+        {
+            throw new InvalidOperationException("Thread pool has stopped.");
+        }
+
+        var task = new MyTask<TResult>(this, func);
+
+        _accessToTask.WaitOne();
+
+        _tasks.Enqueue(task.Invoke);
+
+        _wakeUpEvent.Set();
+        _accessToTask.Set();
+
+        return task;
+    }
+
+    /// <summary>
+    /// Method that puts continuation of task into task queue asynchronously.
+    /// </summary>
+    /// <param name="func">Function to execute.</param>
+    private void SubmitContinuation(Action func)
+    {
+        _accessToTask.WaitOne();
+
+        _tasks.Enqueue(func);
+
+        _wakeUpEvent.Set();
+        _accessToTask.Set();
+    }
+
+    /// <summary>
+    /// Shuts down the thread pool.
+    /// New tasks are not accepted, the started ones are being completed.
+    /// </summary>
+    public void ShutDown()
+    {
+        if (_tokenSource.Token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        _tokenSource.Cancel();
+        _shutdownEvent.Set();
+
+        while (true)
+        {
+            if (_threads.Length == _doneThreadsCount)
+            {
+                break;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Resource release.
+    /// </summary>
+    public void Dispose()
+    {
+        ShutDown();
+
+        _accessToTask.Dispose();
+        _wakeUpEvent.Dispose();
+        _shutdownEvent.Dispose();
+    }
+
+    /// <summary>
+    /// Class that implements performing tasks and the work of threads in the thread pool.
+    /// </summary>
+    private class Worker
+    {
+        private readonly MyThreadPool _threadPool;
+
+        public bool IsDone { get; private set; }
+        public bool IsRunning { get; private set; }
+
+        public Worker(MyThreadPool threadPool)
+        {
+            _threadPool = threadPool;
+            IsDone = false;
+            IsRunning = false;
+
+            var thread = new Thread(Start);
+
+            thread.IsBackground = true;
+            thread.Start();
+        }
+
+        /// <summary>
+        /// Method regulating the work of threads and performing tasks.
+        /// </summary>
+        private void Start()
+        {
+            WaitHandle.WaitAny([_threadPool._wakeUpEvent, _threadPool._shutdownEvent]);
+
+            while (true)
+            {
+                _threadPool._accessToTask.WaitOne();
+
+                if (_threadPool._tasks.TryDequeue(out var task))
+                {
+                    _threadPool._accessToTask.Set();
+                    task();
+                }
+                else if (_threadPool._tokenSource.Token.IsCancellationRequested)
+                {
+                   _threadPool._accessToTask.Set();
+                   break;
+                }
+                else
+                {
+                    _threadPool._accessToTask.Set();
+                    WaitHandle.WaitAny([_threadPool._wakeUpEvent, _threadPool._shutdownEvent]);
+                }
+            }
+
+            Interlocked.Increment(ref _threadPool._doneThreadsCount);
+        }
+    }
+
+    /// <summary>
+    /// Class that implements IMyTask interface.
+    /// </summary>
+    /// <typeparam name="TResult"></typeparam>
+    private class MyTask<TResult> : IMyTask<TResult>
+    {
+        private readonly MyThreadPool _threadPool;
+        private readonly ManualResetEvent _resultSignal;
+        
+        private Func<TResult>? _func;
+        private Exception? _funcException;
+        private TResult? _result;
+        private List<Action> _continuations;
+
+        private volatile bool _isCompleted;
+
+        public bool IsCompleted => _isCompleted;
+
+        public TResult? Result
+        {
+            get
+            {
+                _resultSignal.WaitOne();
+
+                if (_funcException != null)
+                {
+                    throw new AggregateException(_funcException);
+                }
+
+                return _result;
+            }
+        }
+
+        public MyTask(MyThreadPool threadPool, Func<TResult> func)
+        {
+            _threadPool = threadPool;
+            _func = func;
+
+            _isCompleted = false;
+
+            _resultSignal = new ManualResetEvent(false);
+            _continuations = new List<Action>();
+        }
+
+        public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult?, TNewResult> func)
+        {
+            if (_threadPool._tokenSource.Token.IsCancellationRequested)
+            {
+                throw new InvalidOperationException("Thread pool has stopped.");
+            }
+
+            if (_isCompleted)
+            {
+                return _threadPool.Submit(() => func(Result));
+            }
+
+            var continuation = new MyTask<TNewResult>(_threadPool, () => func(Result));
+            _continuations.Add(() => continuation.Invoke());
+
+            return continuation;
+        }
+
+        /// <summary>
+        /// Method that executes the function in the task asynchronously.
+        /// </summary>
+        public void Invoke()
+        {
+            if (_func == null)
+            {
+                _funcException = new Exception("Function can't be null.");
+                return;
+            }
+
+            try
+            {
+                _result = _func();
+            }
+            catch (AggregateException ex)
+            {
+                _funcException = new Exception("Exception in function.", ex);
+            }
+            finally
+            {
+                _func = null;
+                _isCompleted = true;
+
+                _resultSignal.Set();
+                SubmitContinuations();
+            }
+        }
+
+        /// <summary>
+        /// Sends continuations to the task queue in the thread pool.
+        /// </summary>
+        private void SubmitContinuations()
+        {
+            foreach (var continuation in _continuations)
+            {
+                _threadPool.SubmitContinuation(continuation);
+            }
+        }
+    }
+}
