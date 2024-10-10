@@ -9,7 +9,7 @@ public class MyThreadPool
     private readonly Worker[] _threads;
 
     private readonly CancellationTokenSource _tokenSource;
-    private readonly AutoResetEvent _accessToTask;
+    private readonly AutoResetEvent _accessToTaskQueue;
     private readonly AutoResetEvent _wakeUpEvent;
     private readonly ManualResetEvent _shutdownEvent;
     
@@ -26,12 +26,12 @@ public class MyThreadPool
             throw new ArgumentException("Number of threads must be positive.");
         }
 
-        _tasks = new Queue<Action>();
+        _tasks = new();
         _threads = new Worker[threadsCount];
-        _tokenSource = new CancellationTokenSource();
-        _accessToTask = new AutoResetEvent(true);
-        _wakeUpEvent = new AutoResetEvent(false);
-        _shutdownEvent = new ManualResetEvent(false);
+        _tokenSource = new();
+        _accessToTaskQueue = new(true);
+        _wakeUpEvent = new(false);
+        _shutdownEvent = new(false);
         _doneThreadsCount = 0;
 
         for (var i = 0; i < threadsCount; ++i)
@@ -43,9 +43,9 @@ public class MyThreadPool
     /// <summary>
     /// Method that puts task into task queue asynchronously.
     /// </summary>
-    /// <param name="func"></param>
-    /// <typeparam name="TResult"></typeparam>
-    /// <returns></returns>
+    /// <param name="func">Function to evaluate.</param>
+    /// <typeparam name="TResult">Result type of function.</typeparam>
+    /// <returns>Object of IMyTask.</returns>
     public IMyTask<TResult> Submit<TResult>(Func<TResult> func)
     {
         if (_tokenSource.Token.IsCancellationRequested)
@@ -55,35 +55,26 @@ public class MyThreadPool
 
         var task = new MyTask<TResult>(this, func);
 
-        _accessToTask.WaitOne();
-
-        _tasks.Enqueue(task.Invoke);
-
-        _wakeUpEvent.Set();
-        _accessToTask.Set();
+        SubmitAction(task.Calculate);
 
         return task;
     }
 
-    /// <summary>
-    /// Method that puts continuation of task into task queue asynchronously.
-    /// </summary>
-    /// <param name="func">Function to execute.</param>
-    private void SubmitContinuation(Action func)
+    private void SubmitAction(Action task)
     {
-        _accessToTask.WaitOne();
+        _accessToTaskQueue.WaitOne();
 
-        _tasks.Enqueue(func);
+        _tasks.Enqueue(task);
 
         _wakeUpEvent.Set();
-        _accessToTask.Set();
+        _accessToTaskQueue.Set();
     }
 
     /// <summary>
     /// Shuts down the thread pool.
     /// New tasks are not accepted, the started ones are being completed.
     /// </summary>
-    public void ShutDown()
+    public void Shutdown()
     {
         if (_tokenSource.Token.IsCancellationRequested)
         {
@@ -100,16 +91,8 @@ public class MyThreadPool
                 break;
             }
         }
-    }
 
-    /// <summary>
-    /// Resource release.
-    /// </summary>
-    public void Dispose()
-    {
-        ShutDown();
-
-        _accessToTask.Dispose();
+        _accessToTaskQueue.Dispose();
         _wakeUpEvent.Dispose();
         _shutdownEvent.Dispose();
     }
@@ -121,16 +104,11 @@ public class MyThreadPool
     {
         private readonly MyThreadPool _threadPool;
 
-        public bool IsDone { get; private set; }
-        public bool IsRunning { get; private set; }
-
         public Worker(MyThreadPool threadPool)
         {
             _threadPool = threadPool;
-            IsDone = false;
-            IsRunning = false;
 
-            var thread = new Thread(Start);
+            var thread = new Thread(Work);
 
             thread.IsBackground = true;
             thread.Start();
@@ -139,27 +117,27 @@ public class MyThreadPool
         /// <summary>
         /// Method regulating the work of threads and performing tasks.
         /// </summary>
-        private void Start()
+        private void Work()
         {
             WaitHandle.WaitAny([_threadPool._wakeUpEvent, _threadPool._shutdownEvent]);
 
             while (true)
             {
-                _threadPool._accessToTask.WaitOne();
+                _threadPool._accessToTaskQueue.WaitOne();
 
                 if (_threadPool._tasks.TryDequeue(out var task))
                 {
-                    _threadPool._accessToTask.Set();
+                    _threadPool._accessToTaskQueue.Set();
                     task();
                 }
                 else if (_threadPool._tokenSource.Token.IsCancellationRequested)
                 {
-                   _threadPool._accessToTask.Set();
+                   _threadPool._accessToTaskQueue.Set();
                    break;
                 }
                 else
                 {
-                    _threadPool._accessToTask.Set();
+                    _threadPool._accessToTaskQueue.Set();
                     WaitHandle.WaitAny([_threadPool._wakeUpEvent, _threadPool._shutdownEvent]);
                 }
             }
@@ -171,7 +149,7 @@ public class MyThreadPool
     /// <summary>
     /// Class that implements IMyTask interface.
     /// </summary>
-    /// <typeparam name="TResult"></typeparam>
+    /// <typeparam name="TResult">Type of function's return value.</typeparam>
     private class MyTask<TResult> : IMyTask<TResult>
     {
         private readonly MyThreadPool _threadPool;
@@ -192,7 +170,7 @@ public class MyThreadPool
             {
                 _resultSignal.WaitOne();
 
-                if (_funcException != null)
+                if (_funcException is not null)
                 {
                     throw new AggregateException(_funcException);
                 }
@@ -225,7 +203,7 @@ public class MyThreadPool
             }
 
             var continuation = new MyTask<TNewResult>(_threadPool, () => func(Result));
-            _continuations.Add(() => continuation.Invoke());
+            _continuations.Add(() => continuation.Calculate());
 
             return continuation;
         }
@@ -233,9 +211,9 @@ public class MyThreadPool
         /// <summary>
         /// Method that executes the function in the task asynchronously.
         /// </summary>
-        public void Invoke()
+        public void Calculate()
         {
-            if (_func == null)
+            if (_func is null)
             {
                 _funcException = new Exception("Function can't be null.");
                 return;
@@ -247,7 +225,7 @@ public class MyThreadPool
             }
             catch (AggregateException ex)
             {
-                _funcException = new Exception("Exception in function.", ex);
+                _funcException = new Exception(ex.Message, ex);
             }
             finally
             {
@@ -263,11 +241,6 @@ public class MyThreadPool
         /// Sends continuations to the task queue in the thread pool.
         /// </summary>
         private void SubmitContinuations()
-        {
-            foreach (var continuation in _continuations)
-            {
-                _threadPool.SubmitContinuation(continuation);
-            }
-        }
+            => _continuations.ForEach(_threadPool.SubmitAction);
     }
 }
