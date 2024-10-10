@@ -149,7 +149,7 @@ public class MyThreadPool
     /// <summary>
     /// Class that implements IMyTask interface.
     /// </summary>
-    /// <typeparam name="TResult">Type of function's return value.</typeparam>
+    /// <typeparam name="TResult">Type of function's return.</typeparam>
     private class MyTask<TResult> : IMyTask<TResult>
     {
         private readonly MyThreadPool _threadPool;
@@ -211,7 +211,7 @@ public class MyThreadPool
         /// <summary>
         /// Method that executes the function in the task asynchronously.
         /// </summary>
-        public void Calculate()
+        internal void Calculate()
         {
             if (_func is null)
             {
@@ -223,7 +223,7 @@ public class MyThreadPool
             {
                 _result = _func();
             }
-            catch (AggregateException ex)
+            catch (Exception ex)
             {
                 _funcException = new Exception(ex.Message, ex);
             }
