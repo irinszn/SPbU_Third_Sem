@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyThreadPool", "MyThreadPool\MyThreadPool.csproj", "{F1B7F428-66E7-41F3-BC0A-ABC583F03B14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadPool.Tests", "ThreadPool.Tests\ThreadPool.Tests.csproj", "{C602BFCB-BE2E-48AA-A5F3-312A97D39651}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1B7F428-66E7-41F3-BC0A-ABC583F03B14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1B7F428-66E7-41F3-BC0A-ABC583F03B14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1B7F428-66E7-41F3-BC0A-ABC583F03B14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1B7F428-66E7-41F3-BC0A-ABC583F03B14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C602BFCB-BE2E-48AA-A5F3-312A97D39651}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C602BFCB-BE2E-48AA-A5F3-312A97D39651}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C602BFCB-BE2E-48AA-A5F3-312A97D39651}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C602BFCB-BE2E-48AA-A5F3-312A97D39651}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
