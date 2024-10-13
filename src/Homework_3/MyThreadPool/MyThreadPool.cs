@@ -12,17 +12,8 @@ public class MyThreadPool
     private readonly AutoResetEvent _accessToTaskQueue;
     private readonly AutoResetEvent _wakeUpEvent;
     private readonly ManualResetEvent _shutdownEvent;
-    
-    private int _doneThreadsCount;
 
-    /// <summary>
-    /// Number of threads that done their work.
-    /// </summary>
-    /// <value>Number of completed threads.</value>
-    public int DoneThreadsCount
-    {
-        get => _doneThreadsCount;
-    }
+    private int _doneThreadsCount;
 
     /// <summary>
     /// Initialization of MyThreadPool.
@@ -35,18 +26,27 @@ public class MyThreadPool
             throw new ArgumentException("Number of threads must be positive.");
         }
 
-        _tasks = new();
+        _tasks = new ();
         _threads = new Worker[threadsCount];
-        _tokenSource = new();
-        _accessToTaskQueue = new(true);
-        _wakeUpEvent = new(false);
-        _shutdownEvent = new(false);
+        _tokenSource = new ();
+        _accessToTaskQueue = new (true);
+        _wakeUpEvent = new (false);
+        _shutdownEvent = new (false);
         _doneThreadsCount = 0;
 
         for (var i = 0; i < threadsCount; ++i)
         {
             _threads[i] = new Worker(this);
         }
+    }
+
+    /// <summary>
+    /// Number of threads that done their work.
+    /// </summary>
+    /// <value>Number of completed threads.</value>
+    public int DoneThreadsCount
+    {
+        get => _doneThreadsCount;
     }
 
     /// <summary>
@@ -67,16 +67,6 @@ public class MyThreadPool
         SubmitAction(task.Calculate);
 
         return task;
-    }
-
-    private void SubmitAction(Action task)
-    {
-        _accessToTaskQueue.WaitOne();
-
-        _tasks.Enqueue(task);
-
-        _wakeUpEvent.Set();
-        _accessToTaskQueue.Set();
     }
 
     /// <summary>
@@ -104,6 +94,16 @@ public class MyThreadPool
         _accessToTaskQueue.Dispose();
         _wakeUpEvent.Dispose();
         _shutdownEvent.Dispose();
+    }
+
+    private void SubmitAction(Action task)
+    {
+        _accessToTaskQueue.WaitOne();
+
+        _tasks.Enqueue(task);
+
+        _wakeUpEvent.Set();
+        _accessToTaskQueue.Set();
     }
 
     /// <summary>
@@ -163,13 +163,24 @@ public class MyThreadPool
     {
         private readonly MyThreadPool _threadPool;
         private readonly ManualResetEvent _resultSignal;
-        
+
         private Func<TResult>? _func;
         private Exception? _funcException;
         private TResult? _result;
         private List<Action> _continuations;
 
         private volatile bool _isCompleted;
+
+        public MyTask(MyThreadPool threadPool, Func<TResult> func)
+        {
+            _threadPool = threadPool;
+            _func = func;
+
+            _isCompleted = false;
+
+            _resultSignal = new ManualResetEvent(false);
+            _continuations = new List<Action>();
+        }
 
         public bool IsCompleted => _isCompleted;
 
@@ -186,17 +197,6 @@ public class MyThreadPool
 
                 return _result;
             }
-        }
-
-        public MyTask(MyThreadPool threadPool, Func<TResult> func)
-        {
-            _threadPool = threadPool;
-            _func = func;
-
-            _isCompleted = false;
-
-            _resultSignal = new ManualResetEvent(false);
-            _continuations = new List<Action>();
         }
 
         public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult?, TNewResult> func)

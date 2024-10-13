@@ -23,4 +23,4 @@ public interface IMyTask<TResult>
     /// <typeparam name="TNewResult">Type of return value of new task.</typeparam>
     /// <returns>New task.</returns>
     public IMyTask<TNewResult> ContinueWith<TNewResult>(Func<TResult?, TNewResult> func);
-} 
+}
