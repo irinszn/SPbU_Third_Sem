@@ -16,6 +16,15 @@ public class MyThreadPool
     private int _doneThreadsCount;
 
     /// <summary>
+    /// Number of threads that done their work.
+    /// </summary>
+    /// <value>Number of completed threads.</value>
+    public int DoneThreadsCount
+    {
+        get => _doneThreadsCount;
+    }
+
+    /// <summary>
     /// Initialization of MyThreadPool.
     /// </summary>
     /// <param name="threadsCount">Input number of threads.</param>

@@ -43,6 +43,24 @@ public class Tests
     }
 
     [Test]
+    public void ThereAreNThread_InThreadPool()
+    {
+        for (var i = 0; i < threadsCount * 3; ++i)
+        {
+            var task = threadPool.Submit(() => 
+            {
+                Thread.Sleep(100);
+                return 0;
+            });
+        }
+
+        var expected = threadsCount;
+        threadPool.Shutdown();
+
+        Assert.That(threadPool.DoneThreadsCount, Is.EqualTo(expected));
+    }
+
+    [Test]
     public void IsCompleted_ReturnExpectedStatus()
     {
         var mre = new ManualResetEvent(false);
@@ -57,6 +75,7 @@ public class Tests
         Assert.That(task.IsCompleted, Is.False);
 
         mre.Set();
+        Thread.Sleep(200);
 
         Assert.That(task.IsCompleted, Is.True);
     }
