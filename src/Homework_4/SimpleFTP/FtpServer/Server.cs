@@ -8,7 +8,6 @@ public class FTPServer
 {
     private readonly CancellationTokenSource tokenSource;
     private readonly TcpListener listener;
-
     private readonly int port;
 
     public FTPServer(int port)
@@ -27,13 +26,20 @@ public class FTPServer
 
         while (!tokenSource.IsCancellationRequested)
         {
-            var client = await listener.AcceptTcpClientAsync(tokenSource.Token);
-            Console.WriteLine("Connection is established.");
+            try
+            {
+                using var client = await listener.AcceptTcpClientAsync(tokenSource.Token);
+                Console.WriteLine("Connection is established.");
 
-            tasksList.Add(HandleRequests(client));
+                tasksList.Add(HandleRequests(client));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in processing the request: {ex.Message}.");
+            }
         }
 
-        Task.WaitAll(tasksList.ToArray());
+        await Task.WhenAll(tasksList);
     }
 
     private Task HandleRequests(TcpClient client)
