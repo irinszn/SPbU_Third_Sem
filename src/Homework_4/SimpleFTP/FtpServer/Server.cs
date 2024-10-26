@@ -42,6 +42,12 @@ public class FTPServer
         await Task.WhenAll(tasksList);
     }
 
+    public void Stop()
+    {
+        tokenSource.Cancel();
+        listener.Stop();
+    }
+
     private Task HandleRequests(TcpClient client)
     {
         return Task.Run(async () =>
@@ -65,12 +71,6 @@ public class FTPServer
                 }
             }
         });
-    }
-
-    public void Stop()
-    {
-        tokenSource.Cancel();
-        listener.Stop();
     }
 
     private static async Task Get(string path, StreamWriter writer)

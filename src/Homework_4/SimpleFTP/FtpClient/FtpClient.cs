@@ -13,6 +13,12 @@ public class FTPClient
         this.endPoint = endPoint;
     }
 
+    public async Task<string> List(string request)
+        => await MakeRequest(request);
+
+    public async Task<string> Get(string request)
+        => await MakeRequest(request);
+
     private async Task<string> MakeRequest(string request)
     {
         using var client = new TcpClient(endPoint);
@@ -28,10 +34,4 @@ public class FTPClient
 
         return data;
     }
-
-    public async Task<string> List(string request)
-        => await MakeRequest(request);
-
-    public async Task<string> Get(string request)
-        => await MakeRequest(request);
 }
