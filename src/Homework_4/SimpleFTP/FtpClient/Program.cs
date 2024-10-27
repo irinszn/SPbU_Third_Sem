@@ -37,11 +37,15 @@ var request = Console.ReadLine();
 
 while (request != string.Empty)
 {
-    if (request[0]!.ToString() == "1")
+    if (request is null)
+    {
+        return 0;
+    }
+    if (request[0].ToString() == "1")
     {
         Console.WriteLine(await client.List(request));
     }
-    else if (request[0]!.ToString() == "2")
+    else if (request[0].ToString() == "2")
     {
         Console.WriteLine(await client.Get(request));
     }

@@ -4,6 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
+/// <summary>
+/// Implemetation of the server which supports SimpleFTP protocol.
+/// </summary>
 public class FTPServer
 {
     private readonly CancellationTokenSource tokenSource;
@@ -17,6 +20,10 @@ public class FTPServer
         tokenSource = new();
     }
 
+    /// <summary>
+    /// Method that accepts clients requests.
+    /// </summary>
+    /// <returns>Result of asynchronous task execution.</returns>
     public async Task Start()
     {
         var tasksList = new List<Task>();
@@ -42,12 +49,18 @@ public class FTPServer
         await Task.WhenAll(tasksList);
     }
 
+    /// <summary>
+    /// Method that stops server.
+    /// </summary>
     public void Stop()
     {
         tokenSource.Cancel();
         listener.Stop();
     }
 
+    /// <summary>
+    /// Method that processes requests.
+    /// </summary>
     private Task HandleRequests(TcpClient client)
     {
         return Task.Run(async () =>
@@ -73,6 +86,11 @@ public class FTPServer
         });
     }
 
+    /// <summary>
+    /// Method that sends content of file to the client.
+    /// </summary>
+    /// <param name="path">File path in the request.</param>
+    /// <returns>Result of asynchronous task execution.</returns>
     private static async Task Get(string path, StreamWriter writer)
     {
         if (!File.Exists(path))
@@ -85,6 +103,11 @@ public class FTPServer
         await writer.WriteAsync($"{content.Length} {Encoding.UTF8.GetString(content)}");
     }
 
+    /// <summary>
+    /// Method that sends list of files and directories to the client.
+    /// </summary>
+    /// <param name="path">Directory path in the request.</param>
+    /// <returns>Result of asynchronous task execution.</returns>
     private static async Task List(string path, StreamWriter writer)
     {
         if (!Directory.Exists(path))
