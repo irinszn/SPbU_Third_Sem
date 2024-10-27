@@ -39,7 +39,7 @@ public class FTPClient
     /// <returns>Response with data.</returns>
     private async Task<string> MakeRequest(string request)
     {
-        using var client = new TcpClient(endPoint);
+        using var client = new TcpClient();
         await client.ConnectAsync(endPoint);
         Console.WriteLine($"Sending request to port {endPoint.Port}");
 
@@ -49,6 +49,7 @@ public class FTPClient
         
         using var reader = new StreamReader(stream);
         var data = await reader.ReadToEndAsync();
+        Console.WriteLine(data);
 
         return data;
     }

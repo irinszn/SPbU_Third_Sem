@@ -35,7 +35,7 @@ public class FTPServer
         {
             try
             {
-                using var client = await listener.AcceptTcpClientAsync(tokenSource.Token);
+                var client = await listener.AcceptTcpClientAsync(tokenSource.Token);
                 Console.WriteLine("Connection is established.");
 
                 tasksList.Add(HandleRequests(client));
@@ -61,29 +61,27 @@ public class FTPServer
     /// <summary>
     /// Method that processes requests.
     /// </summary>
-    private Task HandleRequests(TcpClient client)
+    private async Task HandleRequests(TcpClient client)
     {
-        return Task.Run(async () =>
+        using var stream = client.GetStream();
+        using var reader = new StreamReader(stream);
+        using var writer = new StreamWriter(stream) { AutoFlush = true};
+
+        var data = await reader.ReadLineAsync();
+
+        if (data != null)
         {
-            using var stream = client.GetStream();
-            using var reader = new StreamReader(stream);
-            using var writer = new StreamWriter(stream) { AutoFlush = true};
-
-            var data = await reader.ReadLineAsync();
-
-            if (data != null)
+            if (data[..2] == "1 ")
             {
-                if (data[..2] == "1 ")
-                {
-                    await List(data[2..], writer);
-                }
-
-                if (data[..2] == "2 ")
-                {
-                    await Get(data[2..], writer);
-                }
+                Console.WriteLine("I'm here");
+                await List(data[2..], writer);
             }
-        });
+
+            if (data[..2] == "2 ")
+            {
+                await Get(data[2..], writer);
+            }
+        }
     }
 
     /// <summary>
@@ -123,7 +121,7 @@ public class FTPServer
 
         foreach (var item in fileAndDirectories)
         {
-            await writer.WriteAsync($"{item} {Directory.Exists(item)}");
+            await writer.WriteAsync($" {item} {Directory.Exists(item)}");
         }
 
         await writer.WriteAsync("\n");

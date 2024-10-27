@@ -10,9 +10,9 @@ if (args.Length != 2 || args[0] == "-help")
 
                         1. To list files in a directory on the server:
 
-                           Input: List - "1 <path: String>\n"
+                           Input: "1 <path: String>\n"
 
-                        2. To download a file from the server:
+                        2. To get a file from the server:
 
                             Input: "2 <path: String>\n"
                         
