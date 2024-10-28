@@ -73,7 +73,6 @@ public class FTPServer
         {
             if (data[..2] == "1 ")
             {
-                Console.WriteLine("I'm here");
                 await List(data[2..], writer);
             }
 
@@ -81,7 +80,7 @@ public class FTPServer
             {
                 await Get(data[2..], writer);
             }
-        }
+        }  
     }
 
     /// <summary>

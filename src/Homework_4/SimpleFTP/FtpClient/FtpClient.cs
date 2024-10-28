@@ -49,7 +49,6 @@ public class FTPClient
         
         using var reader = new StreamReader(stream);
         var data = await reader.ReadToEndAsync();
-        Console.WriteLine(data);
 
         return data;
     }
