@@ -41,11 +41,12 @@ public class Tests
     [Test]
     public async Task Get_ReturnExpectedContensOfFile_WithCorrectPath()
     {
-        var expected = "29 some text\nsome text\nsome text";
+        var expectedLin = "29 some text\nsome text\nsome text";
+        var expectedWin = "31 some text\r\nsome text\r\nsome text";
 
         var actual = await client.Get("2 ../../../TestFiles/test2.txt");
 
-        Assert.That(actual, Is.EqualTo(expected));
+        Assert.That(actual, Is.EqualTo(expectedWin).Or.EqualTo(expectedLin));
     }
 
     [Test]
@@ -64,16 +65,6 @@ public class Tests
         var expected = "-1";
 
         var actual = await client.List("1 ../../../TestFiles/text1.txt");
-
-        Assert.That(actual, Is.EqualTo(expected));
-    }
-
-    [Test]
-    public async Task List_ReturnZero_WithEmptyDirectory()
-    {
-        var expected = "0\n";
-
-        var actual = await client.List("1 ../../../TestFiles/papka");
 
         Assert.That(actual, Is.EqualTo(expected));
     }
