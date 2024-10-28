@@ -1,5 +1,6 @@
-﻿using SimpleFTP;
-using System.Net;
+﻿using System.Net;
+
+using SimpleFTP;
 
 if (args.Length != 2 || args[0] == "-help")
 {
@@ -41,6 +42,7 @@ while (request != string.Empty)
     {
         return 0;
     }
+
     if (request[0].ToString() == "1")
     {
         Console.WriteLine(await client.List(request));

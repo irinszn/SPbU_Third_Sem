@@ -46,7 +46,7 @@ public class FTPClient
         using var stream = client.GetStream();
         using var writer = new StreamWriter(stream) { AutoFlush = true };
         await writer.WriteLineAsync(request);
-        
+
         using var reader = new StreamReader(stream);
         var data = await reader.ReadToEndAsync();
 

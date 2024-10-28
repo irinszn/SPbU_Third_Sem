@@ -17,7 +17,7 @@ public class FTPServer
     {
         this.port = port;
         listener = new TcpListener(IPAddress.Any, port);
-        tokenSource = new();
+        tokenSource = new ();
     }
 
     /// <summary>
@@ -56,31 +56,6 @@ public class FTPServer
     {
         tokenSource.Cancel();
         listener.Stop();
-    }
-
-    /// <summary>
-    /// Method that processes requests.
-    /// </summary>
-    private async Task HandleRequests(TcpClient client)
-    {
-        using var stream = client.GetStream();
-        using var reader = new StreamReader(stream);
-        using var writer = new StreamWriter(stream) { AutoFlush = true};
-
-        var data = await reader.ReadLineAsync();
-
-        if (data != null)
-        {
-            if (data[..2] == "1 ")
-            {
-                await List(data[2..], writer);
-            }
-
-            if (data[..2] == "2 ")
-            {
-                await Get(data[2..], writer);
-            }
-        }  
     }
 
     /// <summary>
@@ -124,5 +99,30 @@ public class FTPServer
         }
 
         await writer.WriteAsync("\n");
+    }
+
+    /// <summary>
+    /// Method that processes requests.
+    /// </summary>
+    private async Task HandleRequests(TcpClient client)
+    {
+        using var stream = client.GetStream();
+        using var reader = new StreamReader(stream);
+        using var writer = new StreamWriter(stream) { AutoFlush = true };
+
+        var data = await reader.ReadLineAsync();
+
+        if (data != null)
+        {
+            if (data[..2] == "1 ")
+            {
+                await List(data[2..], writer);
+            }
+
+            if (data[..2] == "2 ")
+            {
+                await Get(data[2..], writer);
+            }
+        }
     }
 }

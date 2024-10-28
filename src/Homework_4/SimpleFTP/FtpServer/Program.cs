@@ -1,5 +1,6 @@
-﻿using SimpleFTP;
-using System.Net;
+﻿using System.Net;
+
+using SimpleFTP;
 
 if (args.Length != 1 || args[0] == "-help")
 {
