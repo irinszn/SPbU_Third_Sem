@@ -31,11 +31,15 @@ public class Tests
     [Test]
     public async Task List_ReturnExpectedResult_WithCorrectPath()
     {
-        var expected = "4 ../../../TestFiles/papka True ../../../TestFiles/test2.txt False ../../../TestFiles/test1.txt False ../../../TestFiles/empty.txt False\n";
+        var expected1 = "2 ../../../TestFiles/List/papka True ../../../TestFiles/List/text1.txt False\n";
+        var expected2 = "2 ../../../TestFiles/List/text1.txt False ../../../TestFiles/List/papka True\n";
 
-        var actual = await client.List("1 ../../../TestFiles");
+        var expectedWin1 = "2 ../../../TestFiles/List\\papka True ../../../TestFiles/List\\text1.txt False\n";
+        var expectedWin2 = "2 ../../../TestFiles/List\\text1.txt False ../../../TestFiles/List\\papka True\n";
 
-        Assert.That(actual, Is.EqualTo(expected));
+        var actual = await client.List("1 ../../../TestFiles/List");
+
+        Assert.That(actual, Is.EqualTo(expected1).Or.EqualTo(expected2).Or.EqualTo(expectedWin1).Or.EqualTo(expectedWin2));
     }
 
     [Test]
