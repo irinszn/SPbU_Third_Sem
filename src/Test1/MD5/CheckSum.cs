@@ -1,11 +1,18 @@
 namespace CheckSumMD5;
 
 using System.Security.Cryptography;
-using System.IO;
 using static System.Text.Encoding;
 
+/// <summary>
+/// Class that calculates the checksum of a filesystem directory.
+/// </summary>
 public class CheckSum
 {
+    /// <summary>
+    /// Method that calculates the checksum single threaded.
+    /// </summary>
+    /// <param name="path">File or directory path.</param>
+    /// <returns>Array of bytes.</returns>
     public static byte[] SingleThreadCheckSum(string path)
     {
         if (File.Exists(path))
@@ -21,6 +28,11 @@ public class CheckSum
         throw new FileNotFoundException("There is no such file or directory.");
     }
 
+    /// <summary>
+    /// Method that calculates the checksum multi-threaded.
+    /// </summary>
+    /// <param name="path">File or directory path.</param>
+    /// <returns>Array of bytes.</returns>
     public static async Task<byte[]> MultiThreadCheckSum(string path)
     {
         if (File.Exists(path))
@@ -36,6 +48,11 @@ public class CheckSum
         throw new FileNotFoundException("There is no such file or directory.");
     }
 
+    /// <summary>
+    /// Method that gets hash of the file using MD5.
+    /// </summary>
+    /// <param name="path">File path.</param>
+    /// <returns>Byte array with hash.</returns>
     private static byte[] GetFileHash(string path)
     {
         using var md5 = MD5.Create();
@@ -45,6 +62,11 @@ public class CheckSum
         return hash;
     }
 
+    /// <summary>
+    /// Method that gets hash of the directory using MD5.
+    /// </summary>
+    /// <param name="path">Directory path.</param>
+    /// <returns>Byte array with directory hash.</returns>
     private static byte[] GetDirectoryHash(string path)
     {
         using var md5 = MD5.Create();
@@ -70,6 +92,11 @@ public class CheckSum
         return resultHashes.ToArray();
     }
 
+    /// <summary>
+    /// Method that gets hash of the directory async using MD5.
+    /// </summary>
+    /// <param name="path">Directory path.</param>
+    /// <returns>Task.</returns>
     private static async Task<byte[]> GetDirectoryHashAsync(string path)
     {
         using var md5 = MD5.Create();

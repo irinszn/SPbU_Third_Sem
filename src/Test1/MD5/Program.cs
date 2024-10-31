@@ -10,7 +10,6 @@ try
     stopwatch.Stop();
 
     Console.WriteLine($"Single threaded result is {BitConverter.ToString(SingleThreadCheckSum)}");
-
     Console.WriteLine($"Single thread time is: {stopwatch.ElapsedMilliseconds}");
 
     stopwatch.Reset();
@@ -20,7 +19,6 @@ try
     stopwatch.Stop();
 
     Console.WriteLine($"Multi threaded result is {BitConverter.ToString(SingleThreadCheckSum)}");
-
     Console.WriteLine($"Multi thread time is: {stopwatch.ElapsedMilliseconds}");
 }
 catch (FileNotFoundException ex)
