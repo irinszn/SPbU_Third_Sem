@@ -55,18 +55,16 @@ public class CheckSum
         Array.Sort(subDirectories);
         Array.Sort(filesInDirectory);
 
-        var resultHashes = new List<byte>();
-
-        resultHashes.Add(UTF8.GetBytes(Path.GetFileName(path) ?? string.Empty));
+        var resultHashes = new List<byte>(UTF8.GetBytes(Path.GetFileName(path) ?? string.Empty));
 
         foreach (var file in filesInDirectory)
         {
-            resultHashes.Add(GetFileHash(file));
+            resultHashes.AddRange(GetFileHash(file));
         }
 
         foreach (var elem in subDirectories)
         {
-            resultHashes.Add(GetDirectoryHash(elem));
+            resultHashes.AddRange(GetDirectoryHash(elem));
         }
 
         return resultHashes.ToArray();
@@ -98,17 +96,16 @@ public class CheckSum
         await Task.WhenAll(directoriesHashes);
         await Task.WhenAll(filesHashes);
 
-        var resultHashes = new List<byte>();
-        resultHashes.Add(UTF8.GetBytes(Path.GetFileName(path) ?? string.Empty));
+        var resultHashes = new List<byte>(UTF8.GetBytes(Path.GetFileName(path) ?? string.Empty));
 
         foreach (var fileHash in filesHashes)
         {
-            resultHashes.Add(fileHash.Result);
+            resultHashes.AddRange(fileHash.Result);
         }
 
         foreach (var directoryHash in directoriesHashes)
         {
-            resultHashes.Add(directoryHash.Result);
+            resultHashes.AddRange(directoryHash.Result);
         }
 
         return resultHashes.ToArray();
