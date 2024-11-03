@@ -36,12 +36,7 @@ public class LazyTests
     {
         get
         {
-            yield return new TestCaseData(new Lazy<int>(() => 
-            {
-                var array = new int[] {1, 2, 3};
-                var temp = array[0] - 2;
-                return array[temp];
-            }));
+            yield return new TestCaseData(new Lazy<object>(() => throw new Exception()));
         }
     }
 
@@ -69,14 +64,14 @@ public class LazyTests
     [Test]
     public void NullConstructor_ThrowException()
     {
-        Assert.Throws<ArgumentNullException>(() => new Lazy<int>(null));
-        Assert.Throws<ArgumentNullException>(() => new ParallelLazy<int>(null));
+        Assert.Throws<ArgumentNullException>(() => new Lazy<object?>(null));
+        Assert.Throws<ArgumentNullException>(() => new ParallelLazy<object?>(null));
     }
 
     [TestCaseSource(nameof(LazyException))]
-    public void ValueAfterException_ThrowException(ILazy<int> lazy)
+    public void ValueAfterException_ThrowException(ILazy<object> lazy)
     {
-        Assert.Throws<InvalidOperationException>(() => lazy.Get());
+        Assert.Throws<Exception>(() => lazy.Get());
     }
 
     [Test]
@@ -85,6 +80,7 @@ public class LazyTests
         count = 0;
         var expected = 1;
         var threadsCount = Environment.ProcessorCount;
+        var mre = new ManualResetEvent(false);
 
         var lazy = new ParallelLazy<int>(() => 
         {
@@ -96,13 +92,19 @@ public class LazyTests
 
         for (var i = 0; i < threadsCount; ++i)
         {
-            threads[i] = new Thread(() => lazy.Get());
+            threads[i] = new Thread(() => 
+            {
+                mre.WaitOne();
+                lazy.Get();
+            });
         }
 
         foreach (var thread in threads)
         {
             thread.Start();
         }
+
+        mre.Set();
 
         foreach (var thread in threads)
         {

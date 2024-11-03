@@ -10,13 +10,13 @@ public class ParallelLazy<T> : ILazy<T>
     private T? value;
     private Func<T>? supplier;
     private volatile bool isValueCreated;
-    private Exception? exception;
+    private Exception? supplierException;
 
     /// <summary>
     /// Constructor of Lazy object.
     /// </summary>
     /// <param name="supplier">Not nullable function.</param>
-    public ParallelLazy(Func<T> supplier)
+    public ParallelLazy(Func<T>? supplier)
     {
         ArgumentNullException.ThrowIfNull(supplier);
 
@@ -44,12 +44,12 @@ public class ParallelLazy<T> : ILazy<T>
                     }
                     catch (Exception ex)
                     {
-                        exception = ex;
+                        supplierException = ex;
                     }
 
-                    if (exception != null)
+                    if (supplierException is not null)
                     {
-                        throw new InvalidOperationException("Error.");
+                        throw supplierException;
                     }
                 }
             }

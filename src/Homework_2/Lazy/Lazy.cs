@@ -9,13 +9,13 @@ public class Lazy<T> : ILazy<T>
     private T? value;
     private Func<T>? supplier;
     private bool isValueCreated;
-    private Exception? exception;
+    private Exception? supplierException;
 
     /// <summary>
     /// Constructor of Lazy object.
     /// </summary>
     /// <param name="supplier">Not nullable function.</param>
-    public Lazy(Func<T> supplier)
+    public Lazy(Func<T>? supplier)
     {
         ArgumentNullException.ThrowIfNull(supplier);
 
@@ -39,12 +39,12 @@ public class Lazy<T> : ILazy<T>
             }
             catch (Exception ex)
             {
-                exception = ex;
+                supplierException = ex;
             }
 
-            if (exception != null)
+            if (supplierException is not null)
             {
-                throw new InvalidOperationException("Error.");
+                throw supplierException;
             }
         }
 
