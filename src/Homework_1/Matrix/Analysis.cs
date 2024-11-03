@@ -7,25 +7,16 @@ using System.Diagnostics;
 /// </summary>
 public class MultiplicationAnalysis
 {
-    private static readonly Stopwatch Stopwatch = new ();
-
-    public static void Analyze()
+    public static void PrintAnalysis()
     {
-        var dimensions = new (int, int)[] { (300, 300), (500, 500), (1000, 1000) };
-        var parallelResults = new List<(double, double)>();
-        var usualResults = new List<(double, double)>();
+        var parallelResults = new List<(int, int)> { (300, 300), (500, 500), (1000, 1000) };
+        var usualResults = new List<(int, int)> { (300, 300), (500, 500), (1000, 1000) };
 
-        foreach (var dim in dimensions)
-        {
-            parallelResults.Add(AnalyzeMultiplication(dim, dim, true));
-        }
+        parallelResults.Select(x => AnalyzeMultiplication(x, x, true));
 
-        foreach (var dim in dimensions)
-        {
-            usualResults.Add(AnalyzeMultiplication(dim, dim, false));
-        }
+        usualResults.Select(x => AnalyzeMultiplication(x, x, false));
 
-        Console.WriteLine("Values ​​of expectation and standard deviation for matrix multiplication (in ms):");
+        Console.WriteLine("Values of expectation and standard deviation for matrix multiplication (in ms):");
         Console.WriteLine("");
         Console.WriteLine("{0, -20} {1, -20} {2, -20} {3, -20}", "Dimensions", "300×300", "500×500", "1000×1000");
         Console.WriteLine("{0, -20} {1, -20} {2, -20} {3, -20}", "Parallel", $"{parallelResults[0].Item1}, {parallelResults[0].Item2} ", $"{parallelResults[1].Item1}, {parallelResults[1].Item2} ", $"{parallelResults[2].Item1}, {parallelResults[2].Item2} ");
@@ -34,35 +25,37 @@ public class MultiplicationAnalysis
 
     private static (double, double) AnalyzeMultiplication((int, int) firstMatrixSize, (int, int) secondMatrixSize, bool isParallel)
     {
-        var matrix_1 = Generate.GenerateMatrix(firstMatrixSize.Item1, firstMatrixSize.Item2);
-        var matrix_2 = Generate.GenerateMatrix(secondMatrixSize.Item1, secondMatrixSize.Item2);
+        var matrix_1 = MatrixGenerateHelper.GenerateMatrix(firstMatrixSize.Item1, firstMatrixSize.Item2);
+        var matrix_2 = MatrixGenerateHelper.GenerateMatrix(secondMatrixSize.Item1, secondMatrixSize.Item2);
 
         var results = new List<double>();
-        const int startsNumber = 10;
+        const int launchNumber = 10;
 
-        for (var i = 0; i < startsNumber; ++i)
+        var stopwatch = new Stopwatch();
+
+        for (var i = 0; i < launchNumber; ++i)
         {
             if (isParallel)
             {
-                Stopwatch.Start();
+                stopwatch.Start();
                 MatrixMultiplication.ParallelMultiplication(matrix_1, matrix_2);
-                Stopwatch.Stop();
+                stopwatch.Stop();
             }
             else
             {
-                Stopwatch.Start();
+                stopwatch.Start();
                 MatrixMultiplication.Multiplication(matrix_1, matrix_2);
-                Stopwatch.Stop();
+                stopwatch.Stop();
             }
 
-            results.Add(Stopwatch.ElapsedMilliseconds);
+            results.Add(stopwatch.ElapsedMilliseconds);
 
-            Stopwatch.Reset();
+            stopwatch.Reset();
         }
 
         double mean = results.Average();
 
-        double variance = results.Sum(r => Math.Pow(r - mean, 2)) / startsNumber;
+        double variance = results.Sum(r => Math.Pow(r - mean, 2)) / launchNumber;
 
         double standardDeviation = Math.Round(Math.Sqrt(variance), 4);
 

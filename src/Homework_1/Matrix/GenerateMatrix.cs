@@ -3,7 +3,7 @@ namespace Matrices;
 /// <summary>
 /// Class that implement generation of matrices of specified length and width.
 /// </summary>
-public class Generate
+public static class MatrixGenerateHelper
 {
     /// <summary>
     /// Method that generates matrix.
@@ -13,15 +13,15 @@ public class Generate
     /// <param name="filePath">Name of the file into which the matrix should be written.</param>
     public static void GenerateMatrixInFile(int lines, int columns, string filePath)
     {
-        Random rnd = new Random();
-
         using var file = new StreamWriter(filePath);
 
-        for (int i = 0; i < lines; i++)
+        var matrix = GenerateMatrix(lines, columns);
+
+        for (int i = 0; i < lines; ++i)
         {
-            for (int j = 0; j < columns; j++)
+            for (int j = 0; j < columns; ++j)
             {
-                file.Write($"{rnd.Next(-100, 100)} ");
+                file.Write($"{matrix.Values[i, j]} ");
             }
 
             file.Write(Environment.NewLine);
@@ -40,9 +40,9 @@ public class Generate
 
         var matrix = new Matrix(lines, columns);
 
-        for (int i = 0; i < lines; i++)
+        for (int i = 0; i < lines; ++i)
         {
-            for (int j = 0; j < columns; j++)
+            for (int j = 0; j < columns; ++j)
             {
                 matrix.Values[i, j] = rnd.Next(-100, 100);
             }

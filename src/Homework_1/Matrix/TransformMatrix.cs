@@ -3,7 +3,7 @@ namespace Matrices;
 /// <summary>
 /// Class that implements reading and writing matrix to/in file.
 /// </summary>
-public class TransformMatrix
+public static class MatrixTransformHelper
 {
     /// <summary>
     /// Method that reads matrix from input file.
@@ -29,7 +29,7 @@ public class TransformMatrix
         string? line;
         while ((line = reader.ReadLine()) != null)
         {
-            if (line != "")
+            if (line != string.Empty)
             {
                 matrixLines.Add(line.ToString());
             }

@@ -5,7 +5,7 @@ using System.Threading;
 /// <summary>
 /// Class that implements multiplying two matrices.
 /// </summary>
-public class MatrixMultiplication
+public static class MatrixMultiplication
 {
     /// <summary>
     /// Method that multiplies two matrices single-threaded.

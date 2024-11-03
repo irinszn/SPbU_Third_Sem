@@ -26,33 +26,33 @@ if (args.Length == 5 & args[0] == "-generate")
 {
     try
     {
-        Generate.GenerateMatrixInFile(int.Parse(args[1]), int.Parse(args[2]), "matrix_1.txt");
-        Generate.GenerateMatrixInFile(int.Parse(args[3]), int.Parse(args[4]), "matrix_2.txt");
+        MatrixGenerateHelper.GenerateMatrixInFile(int.Parse(args[1]), int.Parse(args[2]), "matrix_1.txt");
+        MatrixGenerateHelper.GenerateMatrixInFile(int.Parse(args[3]), int.Parse(args[4]), "matrix_2.txt");
 
-        var matrix_1 = TransformMatrix.ReadMatrixFromFile("matrix_1.txt");
-        var matrix_2 = TransformMatrix.ReadMatrixFromFile("matrix_2.txt");
+        var matrix_1 = MatrixTransformHelper.ReadMatrixFromFile("matrix_1.txt");
+        var matrix_2 = MatrixTransformHelper.ReadMatrixFromFile("matrix_2.txt");
 
         var result = MatrixMultiplication.ParallelMultiplication(matrix_1, matrix_2);
 
-        TransformMatrix.WriteMatrixToFile(result);
+        MatrixTransformHelper.WriteMatrixToFile(result);
 
         Console.WriteLine("Successful. Result of multiplication in result.txt file.");
     }
-    catch (ArgumentException)
+    catch (ArgumentException e)
     {
-        Console.WriteLine("Matrices are not consistent.");
+        Console.WriteLine(e.Message);
     }
 }
 else if (args.Length == 2)
 {
     try
     {
-        var matrix_1 = TransformMatrix.ReadMatrixFromFile("matrix_1.txt");
-        var matrix_2 = TransformMatrix.ReadMatrixFromFile("matrix_2.txt");
+        var matrix_1 = MatrixTransformHelper.ReadMatrixFromFile("matrix_1.txt");
+        var matrix_2 = MatrixTransformHelper.ReadMatrixFromFile("matrix_2.txt");
 
         var result = MatrixMultiplication.ParallelMultiplication(matrix_1, matrix_2);
 
-        TransformMatrix.WriteMatrixToFile(result);
+        MatrixTransformHelper.WriteMatrixToFile(result);
 
         Console.WriteLine("Successful. Result of multiplication in result.txt file.");
     }
@@ -67,7 +67,7 @@ else if (args.Length == 2)
 }
 else if (args[0] == "-analyze")
 {
-    MultiplicationAnalysis.Analyze();
+    MultiplicationAnalysis.PrintAnalysis();
 }
 else
 {
