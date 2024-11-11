@@ -1,5 +1,8 @@
 namespace MyNUnit;
 
+/// <summary>
+/// Class that implements AssertFailException.
+/// </summary>
 public class AssertFailException : Exception
 {
     public AssertFailException()

@@ -5,10 +5,17 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 
+/// <summary>
+/// Class that implements running tests.
+/// </summary>
 public class TestRunner
     {
         private readonly ConcurrentBag<TestResult> _testsResult = new ConcurrentBag<TestResult>();
 
+        /// <summary>
+        /// Run tests for each assemblies multi-threaded and print results.
+        /// </summary>
+        /// <param name="path">Path to the directory with tests.</param>
         public void RunTest(string path)
         {
             var assemblies = Directory.GetFiles(path, "*.dll").Select(Assembly.LoadFrom).ToList();
@@ -19,6 +26,10 @@ public class TestRunner
             PrintResults();
         }
 
+        /// <summary>
+        /// Executes tests for assembly.
+        /// </summary>
+        /// <param name="assembly">Assembly with tests.</param>
         private void ExecuteTests(Assembly assembly)
         {
             foreach (var type in assembly.GetTypes())
@@ -43,6 +54,10 @@ public class TestRunner
             }
         }
 
+        /// <summary>
+        /// Execute methods before test starts.
+        /// </summary>
+        /// <param name="type">Some class with test attribute.</param>
         private void ExecuteBeforeClass(Type type)
         {
             var beforeClassMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
@@ -54,6 +69,10 @@ public class TestRunner
             }
         }
 
+        /// <summary>
+        /// Execute methods after all tests.
+        /// </summary>
+        /// <param name="type">Some class with test attribute.</param>
         private void ExecuteAfterClass(Type type)
         {
             var afterClassMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
@@ -65,6 +84,10 @@ public class TestRunner
             }
         }
 
+        /// <summary>
+        /// Execute methods before each test.
+        /// </summary>
+        /// <param name="instance">Instance of some class.</param>
         private void ExecuteBefore(object instance)
         {
             var beforeMethods = instance!.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -76,6 +99,10 @@ public class TestRunner
             }
         }
 
+        /// <summary>
+        /// Execute methods after each test.
+        /// </summary>
+        /// <param name="instance">Instance of some class.</param>
         private void ExecuteAfter(object instance)
         {
             var afterMethods = instance!.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -87,6 +114,11 @@ public class TestRunner
             }
         }
 
+        /// <summary>
+        /// Execute test method.
+        /// </summary>
+        /// <param name="instance">Instance of some class.</param>
+        /// <param name="method">Test method.</param>
         private void ExecuteTest(object instance, MethodInfo method)
         {
             var testAttribute = method.GetCustomAttribute<TestAttribute>();
@@ -135,6 +167,9 @@ public class TestRunner
             }
         }
 
+        /// <summary>
+        /// Method that print results of tests.
+        /// </summary>
         private void PrintResults()
         {
             Console.WriteLine("======== Test Results ========");

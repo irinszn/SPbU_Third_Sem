@@ -2,7 +2,7 @@
 
 if (args.Length != 1)
 {
-    Console.WriteLine("Incorect input. Enter path.");
+    Console.WriteLine("Incorrect input. Enter the path to the directory.");
     return 1;
 }
 
