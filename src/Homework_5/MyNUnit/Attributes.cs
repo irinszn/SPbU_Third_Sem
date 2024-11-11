@@ -3,19 +3,13 @@ namespace MyNUnit;
 [AttributeUsage(AttributeTargets.Method)]
 public class TestAttribute : Attribute
 {
-    public Type Expected { get; }
-    public string Ignore { get; }
+    public Type? Expected { get; }
+    public string? Ignore { get; }
 
-    public TestAttribute(Type expeted = null, string ignore = null)
+    public TestAttribute(Type? expected = null, string? ignore = null)
     {
-        Expected = expeted;
-        Ignore = ignore;
-    }
-
-    public TestAttribute(Type expected)
-    {
-        Ignore = null;
         Expected = expected;
+        Ignore = ignore;
     }
 }
 

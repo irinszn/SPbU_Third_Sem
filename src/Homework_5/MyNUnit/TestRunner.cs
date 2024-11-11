@@ -2,95 +2,145 @@ namespace MyNUnit;
 
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Collections.Concurrent;
 
 public class TestRunner
-{
-    public void RunTest(string path)
     {
-        var assemblies = Directory.GetFiles(path, "*.dll").Select(Assembly.LoadFrom);
-    
-        var tasks = new List<Task>();
+        private readonly ConcurrentBag<TestResult> _testsResult = new ConcurrentBag<TestResult>();
 
-        foreach (var assembly in assemblies)
+        public void RunTest(string path)
         {
-            tasks.Add(Task.Run(() => ExecuteTests(assembly)));
+            var assemblies = Directory.GetFiles(path, "*.dll").Select(Assembly.LoadFrom).ToList();
+
+            var tasks = assemblies.Select(assembly => Task.Run(() => ExecuteTests(assembly))).ToArray();
+            Task.WaitAll(tasks);
+
+            PrintResults();
         }
 
-        Task.WaitAll(tasks.ToArray());
-    }
-
-    private void ExecuteTests(Assembly assembly)
-    {
-        foreach (var type in assembly.GetTypes())
+        private void ExecuteTests(Assembly assembly)
         {
-            ExecuteBeforeClass(type);
-            var testMethods = type.GetMethods().Where(m => m.GetCustomAttribute<TestAttribute>() != null);
-
-            foreach (var method in testMethods)
+            foreach (var type in assembly.GetTypes())
             {
-                ExecuteBefore(type);
-                ExecuteTest(method);
-                ExecuteAfter(type);
-            }
+                var testMethods = type.GetMethods().Where(m => m.GetCustomAttribute<TestAttribute>() is not null).ToList();
 
-            ExecuteAfterClass(type);
-        }
-    }
+                if (testMethods.Any())
+                {
+                    var instance = Activator.CreateInstance(type)!;
 
-    private void ExecuteBeforeClass(Type type)
-    {
-        var methodBeforeClass = type.GetMethod("BeforeClass", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+                    ExecuteBeforeClass(type);
 
-        methodBeforeClass?.Invoke(null, null);
-    }
+                    foreach (var method in testMethods)
+                    {
+                        ExecuteBefore(instance);
+                        ExecuteTest(instance, method);
+                        ExecuteAfter(instance);
+                    }
 
-    private void ExecuteAfterClass(Type type)
-    {
-        var methodAfterClass = type.GetMethod("AfterClass", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-
-        methodAfterClass?.Invoke(null, null);
-    }
-
-    private void ExecuteBefore(Type type)
-    {
-        var methodBefore = type.GetMethod("Before", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-        methodBefore?.Invoke(Activator.CreateInstance(type), null);
-    }
-
-    private void ExecuteAfter(Type type)
-    {
-        var methodAfter = type.GetMethod("After", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
-        methodAfter?.Invoke(Activator.CreateInstance(type), null);
-    }
-
-    private void ExecuteTest(MethodInfo method)
-    {
-        var instance = Activator.CreateInstance(method.DeclaringType); //создает экземпляр типа метода
-        var testAttribute = method.GetCustomAttribute<TestAttribute>(); //экземпляр атрибута
-
-        if (testAttribute?.Ignore != null)
-        {
-            Console.WriteLine($"Ignored: {method.Name} - Reason: {testAttribute.Ignore}");
-            return;
-        }
-
-        try
-        {
-            method.Invoke(instance, null);
-            Console.WriteLine($"Passed: {method.Name}");
-        }
-        catch (Exception ex)
-        {
-            if (testAttribute?.Expected != null && ex.InnerException?.GetType() == testAttribute.Expected)
-            {
-                Console.WriteLine($"Expected Exception for {method.Name}: {ex.InnerException.Message}");
-            }
-            else
-            {
-                Console.WriteLine($"Failed: {method.Name} - Exception: {ex.InnerException?.Message}");
+                    ExecuteAfterClass(type);
+                }
             }
         }
+
+        private void ExecuteBeforeClass(Type type)
+        {
+            var beforeClassMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(m => m.GetCustomAttribute<BeforeClassAttribute>() is not null);
+
+            foreach (var method in beforeClassMethods)
+            {
+                method.Invoke(null, null);
+            }
+        }
+
+        private void ExecuteAfterClass(Type type)
+        {
+            var afterClassMethods = type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(m => m.GetCustomAttribute<AfterClassAttribute>() is not null);
+
+            foreach (var method in afterClassMethods)
+            {
+                method.Invoke(null, null);
+            }
+        }
+
+        private void ExecuteBefore(object instance)
+        {
+            var beforeMethods = instance!.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(m => m.GetCustomAttribute<BeforeAttribute>() is not null);
+
+            foreach (var method in beforeMethods)
+            {
+                method.Invoke(instance, null);
+            }
+        }
+
+        private void ExecuteAfter(object instance)
+        {
+            var afterMethods = instance!.GetType().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(m => m.GetCustomAttribute<AfterAttribute>() is not null);
+
+            foreach (var method in afterMethods)
+            {
+                method.Invoke(instance, null);
+            }
+        }
+
+        private void ExecuteTest(object instance, MethodInfo method)
+        {
+            var testAttribute = method.GetCustomAttribute<TestAttribute>();
+            var result = new TestResult { TestName = method.Name };
+            if (testAttribute?.Ignore != null)
+            {
+                result.Passed = true;
+                result.Message = $"Ignored: {testAttribute.Ignore}";
+                _testsResult.Add(result);
+                return;
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                method.Invoke(instance, null);
+                stopwatch.Stop();
+                result.Duration = stopwatch.Elapsed;
+                result.Passed = true;
+                result.Message = "Passed";
+            }
+            catch (TargetInvocationException ex)
+            {
+                if (testAttribute?.Expected is not null && ex.InnerException?.GetType() == testAttribute.Expected)
+                {
+                    result.Passed = true;
+                    result.Message = $"Passed with expected exception: {ex.InnerException.Message}";
+                }
+                else
+                {
+                    result.Passed = false;
+                    result.Message = $"Failed: {ex.InnerException?.Message}";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Passed = false;
+                result.Message = $"Failed: {ex.Message}";
+            }
+            finally
+            {
+                stopwatch.Stop();
+                result.Duration = stopwatch.Elapsed;
+                _testsResult.Add(result);
+            }
+        }
+
+        private void PrintResults()
+        {
+            Console.WriteLine("======== Test Results ========");
+            foreach (var result in _testsResult)
+            {
+                Console.WriteLine($"Test: {result.TestName}, Result: {(result.Passed ? "Passed" : "Failed")}, Duration: {result.Duration.TotalMilliseconds} ms, Message: {result.Message}");
+            }
+        }
     }
-}
