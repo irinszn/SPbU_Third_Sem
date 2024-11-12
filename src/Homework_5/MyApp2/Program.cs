@@ -34,7 +34,6 @@ public class SomeClass
     {
         if (_value != 5)
         {
-            Console.WriteLine(_value);
             throw new Exception("Before method wasn't called");
         }
     }
@@ -51,7 +50,7 @@ public class SomeClass
         throw new InvalidOperationException();
     }
 
-    [Test(null, "Ignored because of some reason")]
+    [Test("Ignored because of some reason")]
     public void IgnoredTestPassed()
     {
         throw new Exception("This test should be ignored");
