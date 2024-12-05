@@ -2,8 +2,15 @@ namespace MyReflector;
 
 using System.Reflection;
 
+/// <summary>
+/// Class that implements the output of all types of a class to a file.
+/// </summary>
 public class MyReflector
 {
+    /// <summary>
+    /// Prints class structure in file.
+    /// </summary>
+    /// <param name="someClass">Name of the class.</param>
     public void PrintStructure(Type someClass)
     {
         var className = someClass.Name;
@@ -35,7 +42,11 @@ public class MyReflector
         }
     }
 
-
+    /// <summary>
+    /// Compares the presence of types in classes.
+    /// </summary>
+    /// <param name="a">First class.</param>
+    /// <param name="b">Second class.</param>
     public void DiffClasses(Type a, Type b)
     {
         var aMembers = a.GetMembers(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
@@ -45,11 +56,11 @@ public class MyReflector
         foreach (var aMember in aMembers)
         {
             var bMember = bMembers.FirstOrDefault(m => m.Name == aMember.Name && m.MemberType == aMember.MemberType);
+
             if (bMember == null)
             {
                 Console.WriteLine($" {aMember.MemberType} {aMember.Name} is only in {a.Name}");
             }
-
         }
     }
 
