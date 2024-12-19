@@ -39,26 +39,22 @@ public class Client
     private static async Task ReadAsync(StreamReader reader)
     {
         string? line;
-        line = await reader.ReadLineAsync();
 
-        while (line != "exit")
+        while ((line = await reader.ReadLineAsync()) != "exit")
         {
             Console.WriteLine($"Server: {line}");
-            line = await reader.ReadLineAsync();
         }
     }
 
     private static async Task WriteAsync(StreamWriter writer)
     {
         string? line;
-        line = Console.ReadLine();
 
-        while (line != "exit")
+        while ((line = Console.ReadLine()) != "exit")
         {
-            await writer.WriteLineAsync($"Client: {line}");
-            line = Console.ReadLine();
-
+            await writer.WriteLineAsync(line);
         }
+
         await writer.WriteLineAsync("exit");
     }
 }

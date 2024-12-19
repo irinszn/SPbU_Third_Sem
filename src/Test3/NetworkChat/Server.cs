@@ -55,30 +55,26 @@ public class Server
     private static async Task ReadAsync(StreamReader reader)
     {
         string? line;
-        line = await reader.ReadLineAsync();
 
-        while (line != "exit")
+        while ((line = await reader.ReadLineAsync()) != "exit")
         {
             Console.WriteLine($"Client: {line}");
-            line = await reader.ReadLineAsync();
         }
     }
 
     private static async Task WriteAsync(StreamWriter writer)
     {
         string? line;
-        line = Console.ReadLine();
 
-        while (line != "exit")
+        while ((line = Console.ReadLine()) != "exit")
         {
-            await writer.WriteLineAsync($"Server: {line}");
-            line = Console.ReadLine();
-
+            await writer.WriteLineAsync(line);
         }
+
         await writer.WriteLineAsync("exit");
     }
 
-    public void Stop()
+    private void Stop()
     {
         tokenSource.Cancel();
         listener.Stop();
