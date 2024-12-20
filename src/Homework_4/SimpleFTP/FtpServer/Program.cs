@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 
 using SimpleFTP;
 
@@ -21,7 +22,15 @@ if (!int.TryParse(args[0], out var port) || port > 65536 || port < 0)
     return 0;
 }
 
-var server = new FTPServer(port);
-await server.StartAsync();
+try
+{
+    var server = new FTPServer(port);
+    await server.StartAsync();
+}
+catch (SocketException)
+{
+    Console.WriteLine("Connection error. Port is busy");
+    return 0;
+}
 
 return 1;

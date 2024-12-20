@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 
 using SimpleFTP;
 
@@ -34,29 +35,37 @@ if (!IPAddress.TryParse(args[0], out var ip) || !int.TryParse(args[1], out var p
 var endPoint = new IPEndPoint(ip, port);
 var client = new FTPClient(endPoint);
 
-var request = Console.ReadLine();
-
-while (request != string.Empty)
+try
 {
-    if (request is null)
-    {
-        return 0;
-    }
+    var request = Console.ReadLine();
 
-    if (request[0].ToString() == "1")
+    while (request != string.Empty)
     {
-        Console.WriteLine(await client.ListAsync(request));
-    }
-    else if (request[0].ToString() == "2")
-    {
-        Console.WriteLine(await client.GetAsync(request));
-    }
-    else
-    {
-        Console.WriteLine("Wrong input. Enter dotnet run -help to see more.");
-    }
+        if (request is null)
+        {
+            return 0;
+        }
 
-    request = Console.ReadLine();
+        if (request[0].ToString() == "1")
+        {
+            Console.WriteLine(await client.ListAsync(request));
+        }
+        else if (request[0].ToString() == "2")
+        {
+            Console.WriteLine(await client.GetAsync(request));
+        }
+        else
+        {
+            Console.WriteLine("Wrong input. Enter dotnet run -help to see more.");
+        }
+
+        request = Console.ReadLine();
+    }
+}
+catch (SocketException)
+{
+    Console.WriteLine("Connection error. Port is busy");
+    return 0;
 }
 
 return 1;
