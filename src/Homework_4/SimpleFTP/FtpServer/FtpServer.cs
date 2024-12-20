@@ -24,7 +24,7 @@ public class FTPServer
     /// Method that accepts clients requests.
     /// </summary>
     /// <returns>Result of asynchronous task execution.</returns>
-    public async Task Start()
+    public async Task StartAsync()
     {
         var tasksList = new List<Task>();
 
@@ -63,7 +63,7 @@ public class FTPServer
     /// </summary>
     /// <param name="path">File path in the request.</param>
     /// <returns>Result of asynchronous task execution.</returns>
-    private static async Task Get(string path, StreamWriter writer)
+    private static async Task GetAsync(string path, StreamWriter writer)
     {
         if (!File.Exists(path))
         {
@@ -80,7 +80,7 @@ public class FTPServer
     /// </summary>
     /// <param name="path">Directory path in the request.</param>
     /// <returns>Result of asynchronous task execution.</returns>
-    private static async Task List(string path, StreamWriter writer)
+    private static async Task ListAsync(string path, StreamWriter writer)
     {
         if (!Directory.Exists(path))
         {
@@ -116,12 +116,12 @@ public class FTPServer
         {
             if (data[..2] == "1 ")
             {
-                await List(data[2..], writer);
+                await ListAsync(data[2..], writer);
             }
 
             if (data[..2] == "2 ")
             {
-                await Get(data[2..], writer);
+                await GetAsync(data[2..], writer);
             }
         }
     }

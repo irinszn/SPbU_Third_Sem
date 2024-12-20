@@ -22,6 +22,6 @@ if (!int.TryParse(args[0], out var port) || port > 65536 || port < 0)
 }
 
 var server = new FTPServer(port);
-await server.Start();
+await server.StartAsync();
 
 return 1;

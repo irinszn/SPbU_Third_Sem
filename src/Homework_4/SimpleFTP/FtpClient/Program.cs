@@ -45,11 +45,11 @@ while (request != string.Empty)
 
     if (request[0].ToString() == "1")
     {
-        Console.WriteLine(await client.List(request));
+        Console.WriteLine(await client.ListAsync(request));
     }
     else if (request[0].ToString() == "2")
     {
-        Console.WriteLine(await client.Get(request));
+        Console.WriteLine(await client.GetAsync(request));
     }
     else
     {
