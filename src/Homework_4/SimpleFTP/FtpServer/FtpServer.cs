@@ -7,7 +7,7 @@ using System.Text;
 /// <summary>
 /// Implemetation of the server which supports SimpleFTP protocol.
 /// </summary>
-public class FTPServer
+public class FTPServer : IFtpServer
 {
     private readonly CancellationTokenSource tokenSource;
     private readonly TcpListener listener;
@@ -55,6 +55,15 @@ public class FTPServer
     public void Stop()
     {
         tokenSource.Cancel();
+        Dispose();
+    }
+
+    /// <summary>
+    /// Resource release.
+    /// </summary>
+    public void Dispose()
+    {
+        tokenSource.Dispose();
         listener.Stop();
     }
 

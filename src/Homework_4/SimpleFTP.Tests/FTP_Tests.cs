@@ -26,6 +26,8 @@ public class Tests
     public void TearDown()
     {
         server.Stop();
+        server.Dispose();
+        client.Dispose();
     }
 
     [Test]

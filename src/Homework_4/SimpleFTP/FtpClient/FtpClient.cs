@@ -7,7 +7,7 @@ using System.Text;
 /// <summary>
 /// Implementation of client, that supports SimpleFTP protocol.
 /// </summary>
-public class FTPClient
+public class FTPClient : IFtpClient
 {
     private readonly IPEndPoint endPoint;
 
@@ -41,6 +41,15 @@ public class FTPClient
     public void Stop()
     {
         tokenSource.Cancel();
+        Dispose();
+    }
+
+    /// <summary>
+    /// Resource release.
+    /// </summary>
+    public void Dispose()
+    {
+        tokenSource.Dispose();
     }
 
     /// <summary>
