@@ -17,6 +17,8 @@ public class Tests
     [OneTimeSetUp]
     public void SetUp()
     {
+        Environment.CurrentDirectory = "../../../";
+
         server = new FTPServer(endPoint.Port);
         client = new FTPClient(endPoint);
         Task.Run(() => server.StartAsync());
@@ -33,13 +35,13 @@ public class Tests
     [Test]
     public async Task List_ReturnExpectedResult_WithCorrectPath()
     {
-        var expected1 = "2 ../../../TestFiles/List/papka True ../../../TestFiles/List/text1.txt False\n";
-        var expected2 = "2 ../../../TestFiles/List/text1.txt False ../../../TestFiles/List/papka True\n";
+        var expected1 = "2 TestFiles/List/papka True TestFiles/List/text1.txt False\n";
+        var expected2 = "2 TestFiles/List/text1.txt False TestFiles/List/papka True\n";
 
-        var expectedWin1 = "2 ../../../TestFiles/List\\papka True ../../../TestFiles/List\\text1.txt False\n";
-        var expectedWin2 = "2 ../../../TestFiles/List\\text1.txt False ../../../TestFiles/List\\papka True\n";
+        var expectedWin1 = "2 TestFiles/List\\papka True TestFiles/List\\text1.txt False\n";
+        var expectedWin2 = "2 TestFiles/List\\text1.txt False TestFiles/List\\papka True\n";
 
-        var actual = await client.ListAsync("1 ../../../TestFiles/List");
+        var actual = await client.ListAsync("1 TestFiles/List");
 
         Assert.That(actual, Is.EqualTo(expected1).Or.EqualTo(expected2).Or.EqualTo(expectedWin1).Or.EqualTo(expectedWin2));
     }
@@ -50,7 +52,7 @@ public class Tests
         var expectedLin = "29 some text\nsome text\nsome text";
         var expectedWin = "31 some text\r\nsome text\r\nsome text";
 
-        var actual = await client.GetAsync("2 ../../../TestFiles/test2.txt");
+        var actual = await client.GetAsync("2 TestFiles/test2.txt");
 
         Assert.That(actual, Is.EqualTo(expectedWin).Or.EqualTo(expectedLin));
     }
@@ -60,7 +62,7 @@ public class Tests
     {
         var expected = "-1";
 
-        var actual = await client.GetAsync("2 ../../../TestFiles/SomeFile.txt");
+        var actual = await client.GetAsync("2 TestFiles/SomeFile.txt");
 
         Assert.That(actual, Is.EqualTo(expected));
     }
@@ -70,7 +72,7 @@ public class Tests
     {
         var expected = "-1";
 
-        var actual = await client.ListAsync("1 ../../../TestFiles/text1.txt");
+        var actual = await client.ListAsync("1 TestFiles/text1.txt");
 
         Assert.That(actual, Is.EqualTo(expected));
     }
@@ -80,7 +82,7 @@ public class Tests
     {
         var expected = "0 ";
 
-        var actual = await client.GetAsync("2 ../../../TestFiles/empty.txt");
+        var actual = await client.GetAsync("2 TestFiles/empty.txt");
 
         Assert.That(actual, Is.EqualTo(expected));
     }
@@ -89,7 +91,7 @@ public class Tests
     public async Task Get_WithManyClients_ReturnExpectedResult_Multithreaded()
     {
         const int clientsNumber = 5;
-        const string request = "2 ../../../TestFiles/test1.txt";
+        const string request = "2 TestFiles/test1.txt";
         const int workTime = 2000;
 
         var results = new string[clientsNumber];
