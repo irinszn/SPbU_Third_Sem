@@ -119,18 +119,21 @@ public class FTPServer : IFtpServer
         using var reader = new StreamReader(stream);
         using var writer = new StreamWriter(stream) { AutoFlush = true };
 
-        var data = await reader.ReadLineAsync();
-
-        if (data != null)
+        if (!tokenSource.IsCancellationRequested)
         {
-            if (data[..2] == "1 ")
-            {
-                await ListAsync(data[2..], writer);
-            }
+            var data = await reader.ReadLineAsync();
 
-            if (data[..2] == "2 ")
+            if (data != null)
             {
-                await GetAsync(data[2..], writer);
+                if (data[..2] == "1 ")
+                {
+                    await ListAsync(data[2..], writer);
+                }
+
+                if (data[..2] == "2 ")
+                {
+                    await GetAsync(data[2..], writer);
+                }
             }
         }
     }
